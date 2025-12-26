@@ -19,11 +19,18 @@ builder.Services.AddHostedService<KafkaMeasurementConsumer>();
 
 builder.Services.AddHealthChecks();
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+
 // Simple in-memory CRUD resource (PRPO requires GET/POST/PUT/DELETE on each service).
 // This represents client-side filtering / subscription preferences.
 var subscriptions = new Dictionary<string, string>();
 
 var app = builder.Build();
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.MapGet("/", () => Results.Ok(new { service = "controller", status = "running" }));
 
