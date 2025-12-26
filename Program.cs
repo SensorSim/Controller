@@ -1,3 +1,6 @@
+// Controller: realtime distribution of measurements to connected clients (SignalR).
+// Consumes Kafka measurements and fans-out to subscribers; Redis is used for scale-out backplane.
+
 using Controller.Hubs;
 using Controller.Services;
 
