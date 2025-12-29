@@ -1,39 +1,53 @@
 # Controller
 
-**Purpose:** Live distribution layer for measurements.
+Live distribution service.
 
-- Consumes Kafka topic `measurements`
-- Streams data to clients via **SignalR**
-- Stores subscription state (and/or SignalR scale-out) in **Redis**
+Consumes Kafka measurements and pushes them to connected clients via SignalR. Redis is used as a SignalR backplane so multiple Controller instances can broadcast consistently.
 
-Controller does not own Postgres data.
+## Branching
 
----
+- `dev` – development
+- `main` – stable / demo-ready
+
+## Requirements
+
+- .NET SDK (tested with 10.0.101)
+- Kafka
+- Redis
+
+## Run
+
+Recommended: run the full stack with Docker Compose (see `infra/docker`).
+
+Local run (you still need Kafka + Redis running):
+
+```bash
+dotnet run
+```
+
+## Configuration
+
+Environment variables:
+
+- `Kafka__BootstrapServers` – Kafka bootstrap servers
+- `Redis__ConnectionString` – Redis connection string (e.g. `localhost:6379`)
 
 ## API
 
-Swagger:
-- `http://localhost:8082/swagger`
+Swagger (docker default): `http://localhost:8082/swagger`
 
 SignalR hub:
-- `http://localhost:8082/hub/measurements`
 
-REST endpoints (subscriptions CRUD):
+- `GET /hub/measurements`
+
+Subscriptions (simple REST CRUD used for demo / PRPO REST requirement):
+
 - `GET /subscriptions`
-- `POST /subscriptions`
-- `PUT /subscriptions/{id}`
-- `DELETE /subscriptions/{id}`
+- `POST /subscriptions/{clientId}?filter=...`
+- `PUT /subscriptions/{clientId}?filter=...`
+- `DELETE /subscriptions/{clientId}`
 
 Health:
+
 - `GET /health/live`
 - `GET /health/ready`
-
----
-
-## Redis
-
-Used for:
-- subscription state and/or backplane (depending on configuration)
-
-Compose service:
-- `redis`
