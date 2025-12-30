@@ -1,5 +1,4 @@
-// Controller: realtime distribution of measurements to connected clients (SignalR).
-// Consumes Kafka measurements and fans-out to subscribers; Redis is used for scale-out backplane.
+// Controller: streams Kafka measurements to clients over SignalR.
 
 using Controller.Hubs;
 using Controller.Services;
@@ -10,7 +9,7 @@ var redis = builder.Configuration["Redis:ConnectionString"]
             ?? builder.Configuration["Redis__ConnectionString"]
             ?? "localhost:6379";
 
-// Redis backplane makes SignalR broadcasts work across multiple Controller pods.
+// Redis backplane for SignalR.
 builder.Services
     .AddSignalR()
     .AddStackExchangeRedis(redis);
@@ -19,11 +18,17 @@ builder.Services.AddHostedService<KafkaMeasurementConsumer>();
 
 builder.Services.AddHealthChecks();
 
-// Simple in-memory CRUD resource (PRPO requires GET/POST/PUT/DELETE on each service).
-// This represents client-side filtering / subscription preferences.
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+
+// Simple in-memory subscriptions (demo + PRPO REST).
 var subscriptions = new Dictionary<string, string>();
 
 var app = builder.Build();
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.MapGet("/", () => Results.Ok(new { service = "controller", status = "running" }));
 
