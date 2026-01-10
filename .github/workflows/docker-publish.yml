@@ -5,7 +5,7 @@ on:
     branches: ["dev", "main"]
     tags: ["v*.*.*"]
   pull_request:
-    branches: ["dev", "main"]
+    branches: ["main"]
 
 permissions:
   contents: read
@@ -15,21 +15,18 @@ env:
   REGISTRY: ghcr.io
   IMAGE: ghcr.io/${{ github.repository_owner }}/reactor-monitor-controller
 
-defaults:
-  run:
-    working-directory: Controller
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
+      # Run tests in a .NET SDK container so we don't depend on the runner's installed .NET version.
       - name: Test (dotnet test)
         run: |
           docker run --rm \
             -v "${{ github.workspace }}:/src" \
-            -w /src/Controller \
+            -w /src \
             mcr.microsoft.com/dotnet/sdk:10.0 \
             dotnet test ./Controller.csproj -c Release
 
@@ -57,8 +54,8 @@ jobs:
       - name: Build (push only on main/tags)
         uses: docker/build-push-action@v6
         with:
-          context: ./Controller
-          file: ./Controller/Dockerfile
+          context: .
+          file: ./Dockerfile
           push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
